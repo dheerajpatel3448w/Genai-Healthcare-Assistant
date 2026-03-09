@@ -77,7 +77,7 @@ userSchema.methods.matchPassword = async function (
   enteredPassword: string
 ): Promise<boolean> {
   return await bcrypt.compare(enteredPassword, this.password);
-};
+}
 
 // Create and export model
 export const User = mongoose.model<IUser>("User", userSchema);
