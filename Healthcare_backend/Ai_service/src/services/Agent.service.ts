@@ -5,6 +5,7 @@ import { Clinical_Report_Specialist } from '../Agents/clinicalreportspecialist.a
 import { Imaging_Report_Specialist } from '../Agents/Imagingreportspecialist.agent.js';
 import { Lab_Report_Specialist } from '../Agents/labreportspecialist.agent.js';
 import { Final_Medical_Synthesizer } from '../Agents/MedicalSynthesizer.agent.js';
+import {z} from 'zod'
 
 export const Agentservice = async(reports:IReport[]) => {
     const labReports = [];
@@ -72,6 +73,9 @@ const [labResults, imagingResults, clinicalResults] = await Promise.all([
     clinical_reports: clinicalResults
   };
 
+
+  console.log(combinedResults);
+  
   // STEP 4: run final synthesizer agent
 
   const finalResult = await run(

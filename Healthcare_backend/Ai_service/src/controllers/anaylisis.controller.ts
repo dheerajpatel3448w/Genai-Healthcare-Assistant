@@ -3,6 +3,7 @@ import { TryCatch } from "../utils/TryCatch.js";
 import { Report } from "../models/report.model.js";
 import { Agentservice } from "../services/Agent.service.js";
 import { ReportAnalysis } from "../models/overallreprot.model.js";
+
 export const Aianaylisis:RequestHandler = TryCatch(async(req:Request,res:Response)=>{
     const userId=req.user?.id;
     if(!userId){
@@ -20,8 +21,8 @@ export const Aianaylisis:RequestHandler = TryCatch(async(req:Request,res:Respons
 
     
  
-        const latestReport = await Report.find(filter).sort({uploadedAt:-1}).limit(limitCount || 1);
-       
+        const latestReport = await Report.find(filter).sort({uploadedAt:-1}).limit(3);
+       console.log(latestReport)
 
         const anaylisis = await Agentservice(latestReport);
         const allReportAnalyses = [

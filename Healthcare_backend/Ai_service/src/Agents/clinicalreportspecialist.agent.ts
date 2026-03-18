@@ -11,7 +11,7 @@ const ClinicalReportAnalysisSchema = z.object({
     z.object({
       symptom: z.string(),
       severity: z.enum(["mild", "moderate", "severe"]),
-      duration: z.string().optional()
+      duration: z.string()
     })
   ),
 
