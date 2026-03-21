@@ -66,7 +66,7 @@ export const getJobStatus: RequestHandler = TryCatch(async(req: Request, res: Re
   const { jobId } = req.params;
 
   // Get job from queue
-  const job = await textExtractionQueue.getJob(jobId);
+  const job = await textExtractionQueue.getJob(jobId as string);
 
   if (!job) {
     return res.status(404).json({
@@ -76,7 +76,7 @@ export const getJobStatus: RequestHandler = TryCatch(async(req: Request, res: Re
   }
 
   const state = await job.getState();
-  const progress = job.progress();
+  const progress = job.progress;
   const data = job.data;
   const result = job.returnvalue;
 

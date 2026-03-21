@@ -8,17 +8,25 @@ export const textExtractionQueue = new Queue("text-extraction", {
   },
 } as any);
 
+import { QueueEvents } from "bullmq";
+
+const queueEvents = new QueueEvents("text-extraction", {
+  connection: {
+    url: redisUrl,
+  },
+} as any);
+
 // Job events for monitoring
-textExtractionQueue.on("active", (job) => {
-  console.log(`Job ${job.id} started...`);
+queueEvents.on("active", ({ jobId }) => {
+  console.log(`Job ${jobId} started...`);
 });
 
-textExtractionQueue.on("completed", (job) => {
-  console.log(`Job ${job.id} completed successfully`);
+queueEvents.on("completed", ({ jobId }) => {
+  console.log(`Job ${jobId} completed successfully`);
 });
 
-textExtractionQueue.on("failed", (job, err) => {
-  console.log(`Job ${job.id} failed with error:`, err.message);
+queueEvents.on("failed", ({ jobId, failedReason }) => {
+  console.log(`Job ${jobId} failed with error:`, failedReason);
 });
 
 export default textExtractionQueue;
