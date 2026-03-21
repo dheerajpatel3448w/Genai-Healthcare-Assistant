@@ -20,7 +20,7 @@ export const healthBrainAgent = new Agent({
   - User's ID (required for all sub-tool calls).
 
   RULES & GUIDELINES:
-  1. Carefully read the intent: symptom_check | doctor_search | appointment_booking | report_analysis | general_query.
+  1. Carefully read the intent: symptom_check | doctor_search | appointment_booking | report_analysis | lifestyle_advice | diet_plan | nutrition_query | general_query.
 
   2. 🩺 SYMPTOMS & CLINICAL ANALYSIS (intent = "symptom_check"):
      a. Run BOTH tools IN PARALLEL for richer context:
