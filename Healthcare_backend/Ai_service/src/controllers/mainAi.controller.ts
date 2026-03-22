@@ -36,7 +36,7 @@ export const mainAiController:RequestHandler = TryCatch(async(req:Request,res:Re
     try {
         // Hand over full control to HealthBrain
        
-        const healthBrainOutput = await HealthBrainService(improvedQueryWithProfile, userId,improvedQuery.clean_query);
+        const healthBrainOutput = await HealthBrainService(improvedQueryWithProfile, userId, improvedQuery);
 
         if (!healthBrainOutput) {
              return res.status(500).json({ success: false, message: "HealthBrain returned no output." });
@@ -47,8 +47,7 @@ export const mainAiController:RequestHandler = TryCatch(async(req:Request,res:Re
         return res.status(200).json({
             success: true,
             intent: improvedQuery.intent,
-            finalResponse: healthBrainOutput.final_response,
-            action_taken: healthBrainOutput.action_taken
+            finalResponse: healthBrainOutput,  // plain Markdown string (outputType removed)
         });
     } catch (error) {
         console.error("HealthBrain Orchestrator failed:", error);

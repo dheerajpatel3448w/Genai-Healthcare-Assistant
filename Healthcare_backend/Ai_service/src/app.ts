@@ -6,7 +6,9 @@ import cookieParser from "cookie-parser";
 import router from "./routes/image.routes.js";
 import ErrorHandler from "./utils/errorHandler.js";
 import type { NextFunction, Request, Response } from "express";
-import router2 from "./routes/analysis.route.js"; 
+import router2 from "./routes/analysis.route.js";
+import router3 from "./routes/mainAi.route.js";
+import doctorAiRouter from "./routes/doctorAi.route.js";
 dotenv.config();
 
 const app: Express = express();
@@ -24,6 +26,9 @@ app.use(cookieParser());
 // Routes
 app.use("/images", router);
 app.use("/analysis", router2);
+app.use("/ai", router3);           // Patient: POST /ai/chat
+app.use("/doctor-ai", doctorAiRouter); // Doctor:  POST /doctor-ai/chat
+
 
 // Error handling middleware
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {

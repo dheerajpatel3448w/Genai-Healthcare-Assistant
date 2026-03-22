@@ -1,5 +1,4 @@
 import { Agent } from "@openai/agents";
-import { z } from "zod";
 import { symptomAnalysisTool } from "./symtom.agent.js";
 import { doctorSuggestionTool } from "./docter.agent.js";
 import { appointmentManagementTool } from "./appointment.agent.js";
@@ -51,14 +50,13 @@ export const healthBrainAgent = new Agent({
      - "Details"     → manage_appointment { action: "get_details", userId, appointmentId }
 
   6. ✏️ RESPONSE SYNTHESIS:
-     - Synthesize tool results into a warm, compassionate, beautifully formatted Markdown response (use emojis, bullet points, headers).
+     - Respond DIRECTLY with a warm, compassionate, beautifully formatted Markdown response (use emojis, bullet points, headers).
+     - Do NOT wrap your answer in any JSON object. Output plain Markdown text only.
      - For health history results: use tables for trends, badges for risk levels (🔴 High / 🟡 Moderate / 🟢 Low).
      - If doctors were recommended, explicitly guide the user to book an appointment.
      - For general health questions with no tools needed, answer directly and helpfully.
      - NEVER expose internal tool names, agent names, or system operations to the user.
   `,
-  outputType: z.object({
-    final_response: z.string(),
-    action_taken: z.string()
-  })
+  // NOTE: outputType intentionally removed to enable token-level streaming.
+  // The agent outputs plain Markdown text which is streamed token-by-token via Socket.IO.
 });
