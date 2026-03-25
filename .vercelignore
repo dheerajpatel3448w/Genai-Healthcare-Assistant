@@ -1,0 +1,7 @@
+Healthcare_backend/
+.git
+.gitignore
+README.md
+node_modules
+.env.local
+.next
