@@ -4,11 +4,11 @@ import { doctorSuggestionTool } from "./docter.agent.js";
 import { appointmentManagementTool } from "./appointment.agent.js";
 import { healthHistoryTool } from "./healthhistory.agent.js";
 import { dietaryCoachTool } from "./dietary.agent.js";
-
+import { emergencyProtocolTool } from "./emergency.agent.js";
 
 export const healthBrainAgent = new Agent({
   name: "HealthBrain Main AI",
-  tools: [symptomAnalysisTool, doctorSuggestionTool, appointmentManagementTool, healthHistoryTool, dietaryCoachTool],
+  tools: [symptomAnalysisTool, doctorSuggestionTool, appointmentManagementTool, healthHistoryTool, dietaryCoachTool, emergencyProtocolTool],
   instructions: `
   You are 'HealthBrain', the ultimate Main AI Orchestrator of an advanced healthcare system.
   You are the primary, most powerful interface between the healthcare system and the user.
@@ -27,7 +27,7 @@ export const healthBrainAgent = new Agent({
         - Call \`get_health_history\` (userId, currentSymptoms as array of keywords)
      b. Merge results: inject \`correlation_context\` from health history into your synthesis.
      c. Evaluate the combined output:
-        - \`urgent_care_needed: true\` → IMMEDIATELY direct user to ER. Life safety first.
+        - \`urgent_care_needed: true\` OR the user explicitly states they are having a life-threatening emergency (e.g., heart attack, severe bleeding) → IMMEDIATELY call \`initiate_emergency_protocol\` (userId, emergencyContext) to alert their emergency contacts, AND direct user to ER. Life safety first.
         - severity "high" or "critical" OR \`doctor_needed: true\` → call \`suggest_doctors\`, pass severity + isEmergency + full symptom analysis.
         - severity "low" → provide home care advice. Suggest doctor only if \`doctor_needed: true\`.
      d. If health history shows \`has_high_risk_patterns: true\` → escalate severity concern in your response even if isolated symptom seems mild.

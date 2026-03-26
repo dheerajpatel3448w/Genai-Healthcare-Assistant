@@ -37,6 +37,7 @@ export interface IUserProfile extends Document {
   // Emergency Contact
   emergencyContact?: {
     name?: string;
+    email?: string;
     phone?: string;
     relation?: string;
   };
@@ -108,6 +109,7 @@ const userProfileSchema = new Schema<IUserProfile>(
   emergencyContact: {
     name: String,
     phone: String,
+    email: String,
     relation: String
   },
 

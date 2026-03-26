@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
+import type { email } from "zod";
 
 export interface IUserProfile extends Document {
 
@@ -38,6 +39,7 @@ export interface IUserProfile extends Document {
   emergencyContact?: {
     name?: string;
     phone?: string;
+    email?: string;
     relation?: string;
   };
 
@@ -108,6 +110,7 @@ const userProfileSchema = new Schema<IUserProfile>(
   emergencyContact: {
     name: String,
     phone: String,
+    email: String,
     relation: String
   },
 

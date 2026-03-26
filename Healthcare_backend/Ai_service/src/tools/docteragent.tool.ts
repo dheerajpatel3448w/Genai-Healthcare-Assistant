@@ -1,4 +1,4 @@
-import { tool } from "@openai/agents";
+﻿import { tool } from "@openai/agents";
 import { z } from "zod";
 import { DoctorProfile } from "../models/Docter.model.js";
 
@@ -15,9 +15,9 @@ export const searchDoctorBasicTool = tool({
   description:
     "Base tool to search for doctors in the database based on specialization, language, and consultation type. Returns a clean list of matched doctors.",
   parameters: z.object({
-    specialization: z.string().optional().describe("Doctor specialization, e.g. Cardiologist, Neurologist"),
-    language: z.string().optional().describe("Language the doctor should speak"),
-    consultationType: z.enum(["online", "clinic", "hospital"]).optional()
+    specialization: z.string().optional().nullable()  .describe("Doctor specialization, e.g. Cardiologist, Neurologist"),
+    language: z.string().optional().nullable().describe("Language the doctor should speak"),
+    consultationType: z.enum(["online", "clinic", "hospital"]).optional().nullable()
   }),
   execute: async ({ specialization, language, consultationType }) => {
     try {
@@ -51,7 +51,7 @@ export const smartDoctorRankingTool = tool({
     "Rank an array of doctors based on quality, rating, experience, and user preferences. Respects keywords like 'cheap', 'affordable', 'experienced', 'highly rated'.",
   parameters: z.object({
     doctors: z.array(z.any()),
-    userPreferences: z.string().optional().describe("Natural language preferences e.g. 'affordable', 'highly experienced'")
+    userPreferences: z.string().optional().nullable().describe("Natural language preferences e.g. 'affordable', 'highly experienced'")
   }),
   execute: async ({ doctors, userPreferences }) => {
     try {
@@ -97,8 +97,8 @@ export const locationBasedDoctorTool = tool({
     "Find doctors near a specific city, address, or hospital name. Useful when the user mentions a location.",
   parameters: z.object({
     specialization: z.string().describe("The required doctor specialization"),
-    cityNameOrAddress: z.string().optional().describe("City or area name to search within"),
-    hospitalName: z.string().optional().describe("Specific hospital or clinic name")
+    cityNameOrAddress: z.string().optional().nullable().describe("City or area name to search within"),
+    hospitalName: z.string().optional().nullable().describe("Specific hospital or clinic name")
   }),
   execute: async ({ cityNameOrAddress, specialization, hospitalName }) => {
     try {
