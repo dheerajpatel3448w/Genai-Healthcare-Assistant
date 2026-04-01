@@ -6,7 +6,8 @@ import {
   updateAppointmentStatus,
   cancelAppointment,
   rescheduleAppointment,
-  getBookedSlots
+  getBookedSlots,
+  getAppointmentById
 } from "../controllers/appointment.controller.js";
 import { isAuthenticated } from "../middlewares/auth.middleware.js";
 
@@ -21,6 +22,9 @@ router.patch("/:id/status", isAuthenticated, updateAppointmentStatus);
 router.patch("/:id/cancel", isAuthenticated, cancelAppointment);
 router.post("/:id/reschedule", isAuthenticated, rescheduleAppointment);
 router.get("/doctor/:doctorId/booked-slots", isAuthenticated, getBookedSlots);
+
+// GET a single appointment by ID
+router.get("/:id", isAuthenticated, getAppointmentById);
 
 export default router;
 

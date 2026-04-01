@@ -57,16 +57,16 @@ Written clinically — for a doctor, not the patient.
       .array(
         z.object({
           reportType: z.string(),
-          reportName: z.string().optional(),
+          reportName: z.string().optional().nullable(),
           keyFindings: z.string(),
           uploadedAt: z.any(),
         })
       )
-      .optional()
+      .optional().nullable()
       .describe("Summary of the most recent reports."),
     consultationHistory: z
       .string()
-      .optional()
+      .optional().nullable()
       .describe("Brief pattern observed from past consultations."),
     profileFound: z.boolean().describe("Whether a health profile exists for this patient."),
   }),
@@ -84,12 +84,12 @@ Pass patientId (the patient's userId).
     patientId: z.string().describe("The patient's MongoDB userId."),
     reportType: z
       .enum(["lab", "imaging", "clinical", "all"])
-      .optional()
+      .optional().nullable()
       .default("all")
       .describe("Type of reports to focus on."),
     focusArea: z
       .string()
-      .optional()
+      .optional().nullable()
       .describe("Optional clinical focus, e.g. 'cardiac', 'diabetes management'."),
   }),
   includeInputSchema: true,

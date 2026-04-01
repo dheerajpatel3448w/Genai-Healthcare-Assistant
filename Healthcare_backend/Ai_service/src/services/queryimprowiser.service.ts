@@ -15,7 +15,10 @@ import { queryImproviser } from "../Agents/queryimprowizer.agent.js";
             throw new Error("User profile not found")
         }
         if(!reportAnalysis){
-            throw new Error("Report analysis not found")
+            return {
+                userProfile,
+                reportAnalysis:"not available"
+            }
         }
         const combinedData = {
             userProfile,
@@ -35,7 +38,7 @@ export const queryImproviserService = async (query:string,userId:string)=>{
             Context:${context}
             User Query:"${query}"
             `)
-
+       console.log(result.finalOutput,"result")
         return result.finalOutput
     } catch (error) {
         console.log(error)

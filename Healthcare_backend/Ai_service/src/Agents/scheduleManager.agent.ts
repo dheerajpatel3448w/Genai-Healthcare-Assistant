@@ -48,24 +48,24 @@ Return structured schedule data for DoctorBrain to format.
     result: z.string().describe("Summary of the schedule action, viewable data, or confirmation."),
     currentProfile: z
       .object({
-        specialization: z.string().optional(),
-        experience: z.number().optional(),
+        specialization: z.string().optional().nullable(),
+        experience: z.number().optional().nullable(),
         availability: z
           .object({
-            days: z.array(z.string()).optional(),
-            startTime: z.string().optional(),
-            endTime: z.string().optional(),
+            days: z.array(z.string()).optional().nullable(),
+            startTime: z.string().optional().nullable(),
+            endTime: z.string().optional().nullable(),
           })
-          .optional(),
-        slotDuration: z.number().optional(),
-        consultationFee: z.number().optional(),
-        consultationType: z.array(z.string()).optional(),
-        rating: z.number().optional(),
+          .optional().nullable(),
+        slotDuration: z.number().optional().nullable(),
+        consultationFee: z.number().optional().nullable(),
+        consultationType: z.array(z.string()).optional().nullable(),
+        rating: z.number().optional().nullable(),
       })
-      .optional()
+      .optional().nullable()
       .describe("Doctor's current profile data."),
-    availableSlots: z.array(z.string()).optional().describe("Available slots for the checked date."),
-    updateSuccess: z.boolean().optional().describe("Whether an update operation succeeded."),
+    availableSlots: z.array(z.string()).optional().nullable().describe("Available slots for the checked date."),
+    updateSuccess: z.boolean().optional().nullable().describe("Whether an update operation succeeded."),
   }),
 });
 
@@ -83,12 +83,12 @@ Always pass doctorId.
     action: z
       .enum(["view_profile", "update_availability", "check_slots"])
       .describe("The schedule action to perform."),
-    days: z.array(z.string()).optional().describe("New working days list."),
-    startTime: z.string().optional().describe("New shift start time, e.g. '09:00 AM'."),
-    endTime: z.string().optional().describe("New shift end time, e.g. '05:00 PM'."),
-    slotDuration: z.number().optional().describe("Slot duration in minutes."),
-    consultationFee: z.number().optional().describe("Fee per consultation in INR."),
-    checkDate: z.string().optional().describe("Date to check slots for, in ISO format."),
+    days: z.array(z.string()).optional().nullable().describe("New working days list."),
+    startTime: z.string().optional().nullable().describe("New shift start time, e.g. '09:00 AM'."),
+    endTime: z.string().optional().nullable().describe("New shift end time, e.g. '05:00 PM'."),
+    slotDuration: z.number().optional().nullable().describe("Slot duration in minutes."),
+    consultationFee: z.number().optional().nullable().describe("Fee per consultation in INR."),
+    checkDate: z.string().optional().nullable().describe("Date to check slots for, in ISO format."),
   }),
   includeInputSchema: true,
   inputBuilder: (args: any) => JSON.stringify(args),

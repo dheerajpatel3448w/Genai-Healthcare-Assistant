@@ -105,12 +105,14 @@ export const login: RequestHandler = TryCatch(
     // Get user without password
     const userWithoutPassword = user.toObject();
     delete (userWithoutPassword as any).password;
-
+   
+    
+    const userWithProfile = { ...userWithoutPassword};
     res.status(200).json({
       success: true,
       message: "Login successful",
       token,
-      user: userWithoutPassword,
+      user: userWithProfile,
     });
   }
 );

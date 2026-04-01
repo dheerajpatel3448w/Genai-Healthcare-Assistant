@@ -180,21 +180,25 @@ This tool builds a full 7-day meal plan based on the user's actual BMI, chronic 
       .describe("The user's MongoDB ObjectId. Required."),
     userGoal: z
       .enum(["lose_weight", "maintain", "gain_weight", "manage_condition"])
-      .optional()
+      .optional().nullable()
       .default("maintain")
       .describe("User's primary dietary goal. Infer from the query if not explicit."),
     userQuery: z
       .string()
-      .optional()
+      .optional().nullable()
       .describe("The original query from the user for context.")
   }),
 
-  inputBuilder: (args: any) =>
-    JSON.stringify({
-      userId: args.userId,
-      userGoal: args.userGoal || "maintain",
-      userQuery: args.userQuery || "Provide comprehensive lifestyle and diet advice."
-    }),
+  includeInputSchema: true,
+
+  inputBuilder: (args: any) => {
+    const params = args.params || args;
+    return JSON.stringify({
+      userId: params.userId,
+      userGoal: params.userGoal || "maintain",
+      userQuery: params.userQuery || "Provide comprehensive lifestyle and diet advice."
+    });
+  },
 
   customOutputExtractor: (result: any) => {
     try {

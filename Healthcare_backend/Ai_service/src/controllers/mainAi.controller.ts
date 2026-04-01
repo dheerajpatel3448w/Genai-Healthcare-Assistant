@@ -4,6 +4,7 @@ import { queryImproviserService } from "../services/queryimprowiser.service.js";
 import { UserProfile } from "../models/userprofile.model.js";
 import { memory } from "../services/mem0.service.js";
 import { redisMemoryService } from "../services/redisMemory.service.js";
+import { ChatHistory } from "../models/chathistory.model.js";
 const { HealthBrainService } = await import("../services/HealthBrain.service.js");
 
 export const mainAiController:RequestHandler = TryCatch(async(req:Request,res:Response)=>{
@@ -31,11 +32,11 @@ export const mainAiController:RequestHandler = TryCatch(async(req:Request,res:Re
     // 🕒 Fetch Recent Conversation History (Short-Term Memory)
     const recentHistory = await redisMemoryService.getRecentContext(userId as string);
 
-    const improvedQueryWithProfile = { ...improvedQuery, userprofile, pastMemories, recentHistory };   
+    const improvedQueryWithProfile = { improvedQuery, userprofile, pastMemories, recentHistory };   
 
     try {
         // Hand over full control to HealthBrain
-       
+       console.log(userId,"userId")
         const healthBrainOutput = await HealthBrainService(improvedQueryWithProfile, userId, improvedQuery);
 
         if (!healthBrainOutput) {
@@ -53,4 +54,25 @@ export const mainAiController:RequestHandler = TryCatch(async(req:Request,res:Re
         console.error("HealthBrain Orchestrator failed:", error);
         return res.status(500).json({ success: false, message: "AI processing failed at HealthBrain level." });
     }
+});
+
+// ────────────────────────────────────────────────────────────
+// @route   GET /ai/history
+// @desc    Fetch patient's past AI consultation history
+// @access  Private
+// ────────────────────────────────────────────────────────────
+export const getAiHistory: RequestHandler = TryCatch(async (req: Request, res: Response) => {
+    const userId = req.user?.id || req.user?.userId;
+
+    if (!userId) {
+        return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+
+    const history = await ChatHistory.find({ userId })
+        .sort({ timestamp: -1 })
+        .limit(limit);
+
+    return res.status(200).json({ success: true, history });
 });

@@ -1,6 +1,7 @@
 import type { Request, Response, RequestHandler } from "express";
 import { TryCatch } from "../utils/TryCatch.js";
 import { Appointment } from "../model/Appointment.model.js";
+import "../model/Docter.model.js"; // Registers DoctorProfile schema for populate()
 
 // Create Appointment
 export const createAppointment: RequestHandler = TryCatch(async (req: Request, res: Response) => {
@@ -35,7 +36,9 @@ export const getUserAppointments: RequestHandler = TryCatch(async (req: Request,
     return res.status(401).json({ success: false, message: "Unauthorized" });
   }
 
-  const appointments = await Appointment.find({ userId }).sort({ appointmentDate: 1 });
+  const appointments = await Appointment.find({ userId })
+    .sort({ appointmentDate: 1 })
+    .populate("doctorId", "specialization consultationType consultationFee");
   return res.status(200).json({ success: true, appointments });
 });
 
@@ -151,3 +154,26 @@ export const getBookedSlots: RequestHandler = TryCatch(async (req: Request, res:
   return res.status(200).json({ success: true, date, bookedSlots: appointments });
 });
 
+// Get Single Appointment by ID
+export const getAppointmentById: RequestHandler = TryCatch(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const userId = req.user?.id;
+
+  if (!userId) {
+    return res.status(401).json({ success: false, message: "Unauthorized" });
+  }
+
+  const appointment = await Appointment.findById(id)
+    .populate("doctorId", "specialization consultationType consultationFee");
+
+  if (!appointment) {
+    return res.status(404).json({ success: false, message: "Appointment not found" });
+  }
+
+  // Ensure patient can only view their own appointments
+  if (appointment.userId.toString() !== userId) {
+    return res.status(403).json({ success: false, message: "Access denied" });
+  }
+
+  return res.status(200).json({ success: true, appointment });
+});

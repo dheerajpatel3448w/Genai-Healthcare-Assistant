@@ -7,6 +7,12 @@ const config = {
   telemetry: false,
   checkCompatibility: false,
   disableHistory: true,
+  llm: {
+    provider: "openai",
+    config: {
+      model: "gpt-4o-mini"
+    }
+  },
    historyStore: {
     provider: "supabase",
     checkCompatibility: false,

@@ -2,6 +2,7 @@ import { TryCatch } from "../utils/TryCatch.js";
 import type { RequestHandler, Request, Response} from "express";
 import { uploadToCloudinary } from "../services/cloudinary.service.js";
 import { textExtractionQueue } from "../queue/textExtractionQueue.js";
+import { Report } from "../models/report.model.js";
 
 
 export const uploadMultipleFiles: RequestHandler = TryCatch(async(req: Request, res: Response) => {
@@ -91,5 +92,21 @@ export const getJobStatus: RequestHandler = TryCatch(async(req: Request, res: Re
   });
 });
 
-  
+// ────────────────────────────────────────────────────────────
+// @route   GET /images/reports
+// @desc    Fetch patient's uploaded medical report list (no LLM cost)
+// @access  Private
+// ────────────────────────────────────────────────────────────
+export const getPatientReports: RequestHandler = TryCatch(async (req: Request, res: Response) => {
+  const userId = req.user?.id || req.user?.userId;
 
+  if (!userId) {
+    return res.status(401).json({ success: false, message: "Unauthorized" });
+  }
+
+  const reports = await Report.find({ patientId: userId })
+    .sort({ uploadedAt: -1 })
+    .select("reportName reportType fileUrl uploadedAt");
+
+  return res.status(200).json({ success: true, reports });
+});

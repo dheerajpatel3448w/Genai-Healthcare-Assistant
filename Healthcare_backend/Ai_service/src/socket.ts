@@ -18,10 +18,18 @@ export const intializeSocket = (server: any) => {
     },
   });
 
-  // 🔐 Auth middleware
+  // 🔐 Auth middleware — supports explicit token OR cookie-based auth
   io.use((socket: any, next) => {
     try {
-      const token = socket.handshake.auth?.token;
+      // Prefer explicit token from handshake.auth (for clients that pass it)
+      let token = socket.handshake.auth?.token;
+
+      // Fallback: extract JWT from the cookie header (cookie-based auth)
+      if (!token) {
+        const cookieHeader = socket.handshake.headers?.cookie || "";
+        const match = cookieHeader.match(/(?:^|;\s*)token=([^;]+)/);
+        if (match) token = match[1];
+      }
 
       if (!token) throw new Error("No token");
 
@@ -78,7 +86,7 @@ export const intializeSocket = (server: any) => {
         // Step 4: Fetch recent Redis conversation context
         const recentHistory = await redisMemoryService.getRecentContext(userId);
 
-        const improvedQueryWithProfile = { ...improvedQuery, userprofile, pastMemories, recentHistory };
+        const improvedQueryWithProfile = {improvedQuery, userprofile, pastMemories, recentHistory };
 
         // Step 5: Signal frontend that AI generation is starting
         emitFn("ai:status", { step: "generating" });

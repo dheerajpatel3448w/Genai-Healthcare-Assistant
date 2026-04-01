@@ -56,6 +56,12 @@ export const getUserLifestyleProfileTool = tool({
   }),
   execute: async ({ userId }) => {
     try {
+      if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+        return {
+          success: false,
+          message: "Invalid or missing userId. Cannot fetch lifestyle profile."
+        };
+      }
       const userObjectId = new mongoose.Types.ObjectId(userId);
       const profile = await UserProfile.findOne({ userId: userObjectId }).lean();
 
@@ -132,6 +138,15 @@ export const getNutritionalInsightsTool = tool({
   }),
   execute: async ({ userId }) => {
     try {
+      if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+        return {
+          success: false,
+          deficiencies: [],
+          elevated: [],
+          normal: [],
+          message: "Invalid or missing userId. Cannot fetch nutritional insights."
+        };
+      }
       const userObjectId = new mongoose.Types.ObjectId(userId);
 
       const labReports = await Report.find({

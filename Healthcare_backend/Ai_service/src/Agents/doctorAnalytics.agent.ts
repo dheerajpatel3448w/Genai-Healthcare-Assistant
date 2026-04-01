@@ -39,15 +39,15 @@ Include actionable suggestions when metrics indicate issues.
       .describe("A written clinical analytics report interpreting all metrics with insights and suggestions."),
     metrics: z
       .object({
-        totalAppointmentsAllTime: z.number().optional(),
-        completedAllTime: z.number().optional(),
-        cancelledAllTime: z.number().optional(),
-        noShowAllTime: z.number().optional(),
-        completionRatePercent: z.string().optional(),
-        uniquePatients: z.number().optional(),
-        thisMonthTotal: z.number().optional(),
-        thisMonthCompleted: z.number().optional(),
-        platformRating: z.number().optional(),
+        totalAppointmentsAllTime: z.number().optional().nullable(),
+        completedAllTime: z.number().optional().nullable(),
+        cancelledAllTime: z.number().optional().nullable(),
+        noShowAllTime: z.number().optional().nullable(),
+        completionRatePercent: z.string().optional().nullable(),
+        uniquePatients: z.number().optional().nullable(),
+        thisMonthTotal: z.number().optional().nullable(),
+        thisMonthCompleted: z.number().optional().nullable(),
+        platformRating: z.number().optional().nullable(),
       })
       .describe("Raw statistics from the database."),
     insights: z

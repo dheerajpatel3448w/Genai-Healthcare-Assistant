@@ -15,7 +15,7 @@ const TrendSchema = z.object({
   trend: z.enum(["improving", "declining", "stable", "fluctuating", "not_found", "insufficient_data"]),
   percentageChange: z.number(),
   clinicalNote: z.string(),
-  totalReadings: z.number().optional()
+  totalReadings: z.number().optional().nullable()
 });
 
 const RiskPatternSchema = z.object({
@@ -133,7 +133,7 @@ ANALYSIS RULES:
 
     recommended_follow_up: z
       .string()
-      .optional()
+      .optional().nullable()
       .describe("Key clinical follow-up action based on the history analysis, e.g. 'Repeat CBC within 30 days — Hb declining trend.'")
   })
 });
@@ -165,28 +165,33 @@ Pass userId, any current symptoms, and any specific metrics to track.
       .describe("The user's MongoDB ObjectId. Required."),
     currentSymptoms: z
       .array(z.string())
-      .optional()
+      .optional().nullable()
       .describe("Current symptoms being reported (e.g. ['fatigue', 'chest pain']). Used to compute historical correlation."),
     metricsToTrack: z
       .array(z.string())
-      .optional()
+      .optional().nullable()
       .describe("Specific lab metric names to trend (e.g. ['Hemoglobin', 'HbA1c']). Leave empty to use defaults."),
     analysisDepth: z
       .enum(["quick", "full"])
-      .optional()
+      .optional().nullable()
       .default("full")
       .describe("'quick' = correlation context only. 'full' = complete analysis with trends and risk patterns.")
   }),
 
   includeInputSchema: true,
 
-  inputBuilder: (args: any) =>
-    JSON.stringify({
-      userId: args.userId,
-      currentSymptoms: args.currentSymptoms || [],
-      metricsToTrack: args.metricsToTrack || ["Hemoglobin", "Blood Glucose", "WBC", "Creatinine", "TSH"],
-      analysisDepth: args.analysisDepth || "full"
-    }),
+  inputBuilder: (args: any) => {
+    console.log("\n[🤖 AGENT HANDOFF] HealthBrain -> HealthHistoryAgent");
+    const params = args.params || args;
+    console.log("   -> userId passed:", params.userId);
+    console.log("   -> symptoms context:", params.currentSymptoms);
+    return JSON.stringify({
+      userId: params.userId,
+      currentSymptoms: params.currentSymptoms || [],
+      metricsToTrack: params.metricsToTrack || ["Hemoglobin", "Blood Glucose", "WBC", "Creatinine", "TSH"],
+      analysisDepth: params.analysisDepth || "full"
+    });
+  },
 
   customOutputExtractor: (result: any) => {
     try {

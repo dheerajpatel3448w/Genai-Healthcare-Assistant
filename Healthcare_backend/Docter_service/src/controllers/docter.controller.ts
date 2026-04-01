@@ -3,6 +3,7 @@ import { DoctorProfile } from "../model/Docter.model.js";
 import { TryCatch } from "../utils/TryCatch.js";
 import ErrorHandler from "../utils/errorHandler.js";
 import mongoose from "mongoose";
+import { User } from "../model/user.model.js"; // Registers the minimal User schema
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Helper: validate ObjectId format
@@ -206,13 +207,12 @@ export const deleteDoctorProfile: RequestHandler = TryCatch(
 // ──────────────────────────────────────────────────────────────────────────────
 export const getAllDoctors: RequestHandler = TryCatch(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { specialization, minExperience, consultationType } = req.query;
+    // Support either general "search" parameter or legacy "specialization"
+    const { specialization, minExperience, consultationType, search } = req.query;
 
-    const filter: Record<string, any> = { isVerified: true };
+    const searchTerm = (search || specialization || "") as string;
 
-    if (specialization) {
-      filter.specialization = { $regex: specialization as string, $options: "i" };
-    }
+    const filter: Record<string, any> = {};
 
     if (minExperience) {
       filter.experience = { $gte: Number(minExperience) };
@@ -222,14 +222,47 @@ export const getAllDoctors: RequestHandler = TryCatch(
       filter.consultationType = { $in: [consultationType] };
     }
 
-    const doctors = await DoctorProfile.find(filter).select(
-      "specialization qualification experience consultationFee consultationType availability rating totalPatients bio profileImage languages services"
-    );
+    let doctors = await DoctorProfile.find(filter)
+      .select("userId specialization qualification experience consultationFee consultationType availability rating totalPatients bio profileImage languages services")
+      .populate("userId", "name email");
+
+    // Perform partial text matching on BOTH name and specialization
+    if (searchTerm) {
+      const regex = new RegExp(searchTerm, "i");
+      doctors = doctors.filter((doc: any) => {
+        const specMatch = doc.specialization && regex.test(doc.specialization);
+        const nameMatch = doc.userId?.name && regex.test(doc.userId.name);
+        return specMatch || nameMatch;
+      });
+    }
 
     return res.status(200).json({
       success: true,
       count: doctors.length,
       doctors,
     });
+  }
+);
+
+// ──────────────────────────────────────────────────────────────────────────────
+// @route   GET /doctor/:id
+// @desc    Get a specific doctor's profile by their DoctorProfile ID
+// @access  Public
+// ──────────────────────────────────────────────────────────────────────────────
+export const getDoctorById: RequestHandler = TryCatch(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+
+    if (!isValidObjectId(id as string)) {
+      return next(new ErrorHandler(400, "Invalid doctor profile ID format."));
+    }
+
+    const profile = await DoctorProfile.findById(id).populate("userId", "name email");
+
+    if (!profile) {
+      return next(new ErrorHandler(404, "Doctor profile not found."));
+    }
+
+    return res.status(200).json({ success: true, profile });
   }
 );

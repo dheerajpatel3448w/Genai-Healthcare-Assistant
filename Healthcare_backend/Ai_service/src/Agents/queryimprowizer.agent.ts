@@ -42,9 +42,15 @@ Classify the query into one of the following:
 - report_analysis → when user refers to reports or analysis
 - doctor_search → when user wants to find a doctor
 - appointment_booking → when user wants to book or schedule
+- wellness → when user asks about daily habits, wellness score, streaks, hydration goals, sleep tracking, activity, screen breaks, stress relief, or the habit tracker
 - general_query → anything else
 
 Choose the closest and most accurate intent.
+
+WELLNESS INTENT KEYWORDS (classify as 'wellness' if any appear):
+"wellness score", "habit tracker", "my habits", "daily habits", "how am I doing",
+"streak", "hydration", "water intake", "sleep goal", "activity goal", "screen breaks",
+"stress relief today", "wellness plan", "my score"
 
 ---
 
@@ -101,6 +107,7 @@ FINAL BEHAVIOR:
       "report_analysis",
       "doctor_search",
       "appointment_booking",
+      "wellness",
       "general_query"
     ]),
     clean_query: z.string(),

@@ -4,6 +4,7 @@ import {
   getUserProfile,
   updateUserProfile,
   deleteUserProfile,
+  getUserProfileById
 } from "../controllers/userprofile.controller.js";
 import { isAuthenticated } from "../middlewares/auth.middleware.js";
 
@@ -21,5 +22,8 @@ router.put("/updateprofile", isAuthenticated, updateUserProfile);
 
 // DELETE /profile/:userId     → Delete user profile
 router.delete("/deleteprofile", isAuthenticated, deleteUserProfile);
+
+// GET    /profile/:id         → Get a specific user profile by ID (e.g. for Doctors)
+router.get("/:id", isAuthenticated, getUserProfileById);
 
 export default router;

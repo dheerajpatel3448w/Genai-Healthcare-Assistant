@@ -90,12 +90,20 @@ export const fetchMedicalTimelineTool = tool({
     userId: z.string().describe("The user's MongoDB ObjectId."),
     limitReports: z
       .number()
-      .optional()
+      .optional().nullable()
       .default(30)
       .describe("Maximum number of reports to include. Default 30.")
   }),
   execute: async ({ userId, limitReports }) => {
     try {
+      if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+        return {
+          success: false,
+          totalEvents: 0,
+          timeline: [],
+          message: "Invalid or missing userId. Cannot fetch medical timeline."
+        };
+      }
       const userObjectId = new mongoose.Types.ObjectId(userId);
 
       // Fetch reports (sorted oldest → newest for timeline)
@@ -223,6 +231,13 @@ export const detectHealthTrendsTool = tool({
   }),
   execute: async ({ userId, metricNames }) => {
     try {
+      if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+        return {
+          success: false,
+          trends: [],
+          message: "Invalid or missing userId. Cannot detect health trends."
+        };
+      }
       const userObjectId = new mongoose.Types.ObjectId(userId);
 
       // Only scan lab reports (they contain structured numeric values)
@@ -326,6 +341,13 @@ export const detectRiskPatternsTool = tool({
   }),
   execute: async ({ userId }) => {
     try {
+      if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+        return {
+          success: false,
+          patterns: [],
+          message: "Invalid or missing userId. Cannot detect risk patterns."
+        };
+      }
       const userObjectId = new mongoose.Types.ObjectId(userId);
 
       // Fetch everything needed for pattern detection
@@ -512,6 +534,16 @@ export const getHealthContextForSymptomTool = tool({
   }),
   execute: async ({ userId, symptomKeywords }) => {
     try {
+      if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+        return {
+          success: false,
+          correlationStrength: "none",
+          correlationScore: 0,
+          matchedEvidence: [],
+          context_summary: "Invalid or missing userId. Cannot check historical health context.",
+          message: "Invalid or missing userId."
+        };
+      }
       const userObjectId = new mongoose.Types.ObjectId(userId);
       const lowerKeywords = symptomKeywords.map((k) => k.toLowerCase());
 

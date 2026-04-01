@@ -82,6 +82,26 @@ export const AIanaylisisgetReportsByIds: RequestHandler = TryCatch(async(req:Req
 
         const anaylisis = await Agentservice(reports);
 
+         const allReportAnalyses = [
+  ...anaylisis.combinedResults.lab_reports,
+  ...anaylisis.combinedResults.imaging_reports,
+  ...anaylisis.combinedResults.clinical_reports
+];
+             
+const savedAnalysis = await ReportAnalysis.create({
+  patientId:userId,
+
+  reports: allReportAnalyses.map((r) => ({
+    reportId: r.id,
+    reportName: r.reportName,
+    reportType: r.reportType,
+    analysis: r.analysis
+  })),
+
+  finalAnalysis:anaylisis.finalAnalysis
+});
+
+
         return res.status(200).json({
             success:true,
             reports: reports,   
@@ -94,3 +114,32 @@ export const AIanaylisisgetReportsByIds: RequestHandler = TryCatch(async(req:Req
         })
     }
 })
+
+// ────────────────────────────────────────────────────────────
+// @route   GET /analysis/history
+// @desc    Fetch patient's uploaded reports + most recent pre-generated analysis
+//          (DB read only — no LLM cost)
+// @access  Private
+// ────────────────────────────────────────────────────────────
+export const getAnalysisHistory: RequestHandler = TryCatch(async (req: Request, res: Response) => {
+    const userId = req.user?.id || req.user?.userId;
+
+    if (!userId) {
+        return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    const reports = await Report.find({ patientId: userId })
+        .sort({ uploadedAt: -1 })
+        .limit(10)
+        .select("reportName reportType fileUrl uploadedAt analysis");
+
+    const analysis = await ReportAnalysis.findOne({ patientId: userId })
+        .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+        success: true,
+        reports,
+        analysis
+    });
+});
+

@@ -66,11 +66,13 @@ This tool will take over and execute the emergency alert protocol to contact the
 
   includeInputSchema: true,
 
-  inputBuilder: (args: any) =>
-    JSON.stringify({
-      userId: args.userId,
-      emergencyContext: args.emergencyContext
-    }),
+  inputBuilder: (args: any) => {
+    const params = args.params || args;
+    return JSON.stringify({
+      userId: params.userId,
+      emergencyContext: params.emergencyContext
+    });
+  },
 
   customOutputExtractor: (result: any) => {
     try {

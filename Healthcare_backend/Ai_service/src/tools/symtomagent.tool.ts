@@ -34,6 +34,12 @@ export const getRelevantReportsTool = tool({
   }),
   execute: async ({ userId, userQuery }) => {
     try {
+      if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+        return {
+          hasReports: false,
+          message: "No valid user ID provided. Proceeding with symptom-only analysis."
+        };
+      }
       // FIX 4: Cap at 20 most recent reports to prevent token overflow
       const userReports = await Report.find({ patientId: userId })
         .select("reportName reportType uploadedAt _id")
@@ -150,6 +156,12 @@ export const getUserHealthProfileTool = tool({
   }),
   execute: async ({ userId }) => {
     try {
+      if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+        return {
+          hasProfile: false,
+          message: "No valid user ID provided. Analysis will rely solely on reported symptoms."
+        };
+      }
       const profile = await UserProfile.findOne({ userId })
         .select(
           "age gender height weight bloodGroup allergies chronicDiseases currentMedications pastSurgeries familyHistory lifestyle"
@@ -233,6 +245,12 @@ export const getRecentAppointmentHistoryTool = tool({
   }),
   execute: async ({ userId, limit }) => {
     try {
+      if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+        return {
+          hasHistory: false,
+          message: "No valid user ID provided."
+        };
+      }
       const appointments = await Appointment.find({
         userId: new mongoose.Types.ObjectId(userId),
         status: { $in: ["completed", "scheduled", "rescheduled"] }

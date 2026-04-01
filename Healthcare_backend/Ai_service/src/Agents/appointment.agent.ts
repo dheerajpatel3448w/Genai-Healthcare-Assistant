@@ -79,7 +79,7 @@ TOOL CALL ORDER FOR RESCHEDULING:
       "A fully formatted, human-readable response about the appointment action taken — including confirmation summaries, appointment lists, cancellation details, or error messages."
     ),
     action_successful: z.boolean().describe("Whether the requested appointment action was completed successfully."),
-    appointmentId: z.string().optional().describe("The ID of the affected appointment, if applicable.")
+    appointmentId: z.string().optional().nullable().describe("The ID of the affected appointment, if applicable.")
   })
 });
 
@@ -106,36 +106,38 @@ Always pass the userId and all required context (doctorId, date, time, action, e
     action: z
       .enum(["book", "cancel", "reschedule", "view", "check_slots", "get_details"])
       .describe("The appointment action the user wants to perform."),
-    doctorId: z.string().optional().describe("The doctor's MongoDB ObjectId. Required for booking, rescheduling, and checking slots."),
-    appointmentId: z.string().optional().describe("The appointment ObjectId. Required for cancelling, rescheduling, and getting details."),
-    appointmentDate: z.string().optional().describe("Date in ISO format (e.g. '2025-04-10'). Required for booking, rescheduling, checking slots."),
-    startTime: z.string().optional().describe("Start time like '10:30 AM'. Required for booking and rescheduling."),
-    newDate: z.string().optional().describe("New date for rescheduling, ISO format."),
-    newStartTime: z.string().optional().describe("New time slot for rescheduling."),
-    consultationType: z.enum(["online", "offline"]).optional().describe("Required for booking."),
-    reason: z.string().optional().describe("Reason for the appointment visit."),
+    doctorId: z.string().optional().nullable().describe("The doctor's MongoDB ObjectId. Required for booking, rescheduling, and checking slots."),
+    appointmentId: z.string().optional().nullable().describe("The appointment ObjectId. Required for cancelling, rescheduling, and getting details."),
+    appointmentDate: z.string().optional().nullable().describe("Date in ISO format (e.g. '2025-04-10'). Required for booking, rescheduling, checking slots."),
+    startTime: z.string().optional().nullable().describe("Start time like '10:30 AM'. Required for booking and rescheduling."),
+    newDate: z.string().optional().nullable().describe("New date for rescheduling, ISO format."),
+    newStartTime: z.string().optional().nullable().describe("New time slot for rescheduling."),
+    consultationType: z.enum(["online", "offline"]).optional().nullable().describe("Required for booking."),
+    reason: z.string().optional().nullable().describe("Reason for the appointment visit."),
     filter: z
       .enum(["upcoming", "past", "all", "cancelled"])
-      .optional()
+      .optional().nullable()
       .describe("For 'view' action: filter appointments by status.")
   }),
 
   includeInputSchema: true,
 
-  inputBuilder: (args: any) =>
-    JSON.stringify({
-      userId: args.userId,
-      action: args.action,
-      doctorId: args.doctorId || null,
-      appointmentId: args.appointmentId || null,
-      appointmentDate: args.appointmentDate || null,
-      startTime: args.startTime || null,
-      newDate: args.newDate || null,
-      newStartTime: args.newStartTime || null,
-      consultationType: args.consultationType || "online",
-      reason: args.reason || "",
-      filter: args.filter || "upcoming"
-    }),
+  inputBuilder: (args: any) => {
+    const params = args.params || args;
+    return JSON.stringify({
+      userId: params.userId,
+      action: params.action,
+      doctorId: params.doctorId || null,
+      appointmentId: params.appointmentId || null,
+      appointmentDate: params.appointmentDate || null,
+      startTime: params.startTime || null,
+      newDate: params.newDate || null,
+      newStartTime: params.newStartTime || null,
+      consultationType: params.consultationType || "online",
+      reason: params.reason || "",
+      filter: params.filter || "upcoming"
+    });
+  },
 
   customOutputExtractor: (result: any) => {
     try {

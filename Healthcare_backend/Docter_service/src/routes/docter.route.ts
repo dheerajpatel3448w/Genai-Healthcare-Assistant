@@ -5,6 +5,7 @@ import {
   updateDoctorProfile,
   deleteDoctorProfile,
   getAllDoctors,
+  getDoctorById,
 } from "../controllers/docter.controller.js";
 import { isAuthenticated } from "../middlewares/auth.middleware.js";
 
@@ -26,5 +27,8 @@ router.put("/updateprofile", isAuthenticated, updateDoctorProfile);
 
 // DELETE /doctor/deleteprofile  → Delete logged-in doctor's profile
 router.delete("/deleteprofile", isAuthenticated, deleteDoctorProfile);
+
+// GET    /doctor/:id            → Get a specific doctor profile by ID
+router.get("/:id", getDoctorById);
 
 export default router;

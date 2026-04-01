@@ -62,15 +62,38 @@ const fetchDoctorMemory = async (doctorUserId: string, query: string) => {
 };
 
 // ─────────────────────────────────────────────────────────────
-// Background memory saver — Redis + Mem0 + MongoDB
+// Safely convert stream.output (array | string | any) to a plain string
+// @openai/agents streaming returns output as an array of RunItem objects
 // ─────────────────────────────────────────────────────────────
+const extractTextOutput = (output: any): string => {
+  if (typeof output === "string") return output;
+  if (Array.isArray(output)) {
+    return output
+      .map((msg: any) => {
+        if (typeof msg === "string") return msg;
+        if (Array.isArray(msg?.content)) {
+          return msg.content
+            .filter((c: any) => c?.type === "output_text" || c?.type === "text")
+            .map((c: any) => c?.text ?? "")
+            .join("");
+        }
+        return "";
+      })
+      .filter(Boolean)
+      .join("\n");
+  }
+  return JSON.stringify(output);
+};
+
 const saveDoctorMemoryBackground = (
   doctorUserId: string,
   query: string,
-  response: string
+  rawOutput: any
 ) => {
   Promise.resolve().then(async () => {
     try {
+      const response = extractTextOutput(rawOutput);
+
       // 1️⃣ Redis — fast short-term context (same key as doctorUserId)
       await redisMemoryService.saveInteraction(doctorUserId, query, response);
 
@@ -134,10 +157,12 @@ export const DoctorBrainStreamingService = async (
     }
 
     await stream.completed;
-    const finalOutput: string = (stream as any).output ?? "";
+    // stream.output is a RunItem array — extract text content
+    const rawOutput = (stream as any).output ?? "";
+    const finalOutput: string = extractTextOutput(rawOutput);
 
     // 🧠 Save to Redis + Mem0 + MongoDB in background
-    saveDoctorMemoryBackground(doctorUserId, query, finalOutput);
+    saveDoctorMemoryBackground(doctorUserId, query, rawOutput);
 
     return finalOutput;
   } catch (error) {

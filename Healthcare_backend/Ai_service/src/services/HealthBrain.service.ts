@@ -7,29 +7,68 @@ import { ChatHistory } from "../models/chathistory.model.js";
 // ─────────────────────────────────────────────────────────────────
 // Helper: builds the full prompt string (shared by both services)
 // ─────────────────────────────────────────────────────────────────
-const buildPrompt = (improvedQueryWithProfile: any, userId: string) => `
-    CONTEXT / IMPROVED QUERY / USER PROFILE:
-    ${JSON.stringify(improvedQueryWithProfile, null, 2)}
-    
-    PAST MEMORIES (Mem0):
-    ${improvedQueryWithProfile.pastMemories ? improvedQueryWithProfile.pastMemories : "No relevant past memories found."}
-    Use these past memories to maintain conversational continuity, remember user preferences, and provide personalized context to your answers or sub-tools.
+const buildPrompt = (improvedQueryWithProfile: any, userId: string) => {
+    // Safely extract fields from the structured query object
+    const iq = improvedQueryWithProfile.improvedQuery ?? {};
+    const intent = iq.intent ?? "general_query";
+    const cleanQuery = iq.clean_query ?? "";
+    const entities = iq.entities ?? {};
+    const userprofile = improvedQueryWithProfile.userprofile
+        ? JSON.stringify(improvedQueryWithProfile.userprofile, null, 2)
+        : "No profile available.";
 
-    RECENT CONVERSATION HISTORY (Last 5 interactions):
-    ${improvedQueryWithProfile.recentHistory}
-    Use this immediate context for pronouns (it, this, them) or conversational follow-ups.
+    return `
+INTENT: ${intent}
+CLEAN QUERY: ${cleanQuery}
+ENTITIES: ${JSON.stringify(entities)}
 
-    USER ID STRING:
-    "${userId}"
-    (Provide this ID precisely when calling your sub-tools)
+USER PROFILE:
+${userprofile}
+
+PAST MEMORIES (Mem0):
+${improvedQueryWithProfile.pastMemories ?? "No relevant past memories found."}
+Use these past memories to maintain conversational continuity, remember user preferences, and provide personalized context.
+
+RECENT CONVERSATION HISTORY (Last 5 interactions):
+${improvedQueryWithProfile.recentHistory ?? "No relevant recent conversation history found."}
+Use this immediate context for pronouns (it, this, them) or conversational follow-ups.
+
+USER ID STRING:
+"${userId}"
+(Provide this ID precisely when calling your sub-tools)
 `;
+};
 
 // ─────────────────────────────────────────────────────────────────
 // Background memory saver (shared logic)
 // ─────────────────────────────────────────────────────────────────
-const saveMemoryBackground = (userId: string, cleanQuery: string, finalOutput: string) => {
+// Safely convert any finalOutput value (string | array | object) to a plain string
+const extractTextOutput = (output: any): string => {
+    if (typeof output === "string") return output;
+    // @openai/agents streaming: output is an array of message objects
+    if (Array.isArray(output)) {
+        return output
+            .map((msg: any) => {
+                if (typeof msg === "string") return msg;
+                // Each message has a content array with text blocks
+                if (Array.isArray(msg?.content)) {
+                    return msg.content
+                        .filter((c: any) => c?.type === "output_text" || c?.type === "text")
+                        .map((c: any) => c?.text ?? "")
+                        .join("");
+                }
+                return "";
+            })
+            .filter(Boolean)
+            .join("\n");
+    }
+    return JSON.stringify(output);
+};
+
+const saveMemoryBackground = (userId: string, cleanQuery: string, rawOutput: any) => {
     Promise.resolve().then(async () => {
         try {
+            const finalOutput = extractTextOutput(rawOutput);
             await redisMemoryService.saveInteraction(userId, cleanQuery, finalOutput);
             await memory.add([
                 { role: "user", content: cleanQuery },
@@ -87,11 +126,13 @@ export const HealthBrainStreamingService = async (
         // ⚠️ ALWAYS await completed before treating the run as settled
         await stream.completed;
 
-        // `stream.output` is the full assembled Markdown text
-        const finalOutput: string = (stream as any).output ?? "";
+        // stream.output is an array of RunItem objects from @openai/agents
+        // Extract the plain text from the final text output block
+        const rawOutput = (stream as any).output ?? "";
+        const finalOutput: string = extractTextOutput(rawOutput);
 
         // 🧠 Background saves (identical to non-streaming path)
-        saveMemoryBackground(userId, improvedQuery.clean_query, finalOutput);
+        saveMemoryBackground(userId, improvedQuery.clean_query, rawOutput);
 
         return finalOutput;
     } catch (error) {
@@ -114,4 +155,4 @@ export const HealthBrainService = async (improvedQueryWithProfile: any, userId: 
         console.log("Error running HealthBrain Agent:", error);
         throw new Error("Failed to process main AI logic");
     }
-};
+};

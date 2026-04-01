@@ -136,40 +136,35 @@ Pass ALL available context: symptom analysis, specialization, severity, user pre
       .describe("The specialization recommended by the Symptom Agent or requested by the user"),
     severityLevel: z
       .enum(["low", "moderate", "high", "critical"])
-      .optional()
-      .default("moderate")
-      .describe("Symptom severity from the Symptom Agent output"),
+      .describe("Symptom severity from the Symptom Agent output. Use 'moderate' if unknown."),
     isEmergency: z
       .boolean()
-      .optional()
-      .default(false)
-      .describe("Whether the case is classified as an emergency"),
+      .describe("Whether the case is classified as an emergency. Use false if unknown."),
     userPreferences: z
       .string()
-      .optional()
-      .describe("User preferences as natural language: language, budget, consultation mode, etc."),
+      .describe("User preferences as natural language: language, budget, consultation mode, etc. Pass empty string if none."),
     userLocation: z
       .string()
-      .optional()
-      .describe("User's city or region if they mentioned one"),
+      .describe("User's city or region if they mentioned one. Pass empty string if unknown."),
     userId: z
       .string()
-      .optional()
-      .describe("The patient's user ID")
+      .describe("The patient's user ID. Pass empty string if unknown.")
   }),
 
   includeInputSchema: true,
 
-  inputBuilder: (args: any) =>
-    JSON.stringify({
-      SymptomAnalysis: args.symptomsAnalysis,
-      TargetSpecialization: args.suggestedSpecialization,
-      SeverityLevel: args.severityLevel || "moderate",
-      IsEmergency: args.isEmergency || false,
-      UserPreferences: args.userPreferences || "None specified",
-      UserLocation: args.userLocation || null,
-      UserId: args.userId || null
-    }),
+  inputBuilder: (args: any) => {
+    const params = args.params || args;
+    return JSON.stringify({
+      SymptomAnalysis: params.symptomsAnalysis,
+      TargetSpecialization: params.suggestedSpecialization,
+      SeverityLevel: params.severityLevel || "moderate",
+      IsEmergency: params.isEmergency || false,
+      UserPreferences: params.userPreferences || "None specified",
+      UserLocation: params.userLocation || null,
+      UserId: params.userId || null
+    });
+  },
 
   customOutputExtractor: (result: any) => {
     try {

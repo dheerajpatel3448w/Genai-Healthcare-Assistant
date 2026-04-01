@@ -55,20 +55,20 @@ Include: appointments list, action results, counts, and any important notes.
       .array(
         z.object({
           appointmentId: z.string(),
-          patientId: z.string().optional(),
-          date: z.any().optional(),
-          startTime: z.string().optional(),
-          status: z.string().optional(),
-          reason: z.string().optional(),
-          notes: z.string().optional(),
-          consultationType: z.string().optional(),
-          paymentStatus: z.string().optional(),
+          patientId: z.string().optional().nullable(),
+          date: z.any().optional().nullable(),
+          startTime: z.string().optional().nullable(),
+          status: z.string().optional().nullable(),
+          reason: z.string().optional().nullable(),
+          notes: z.string().optional().nullable(),
+          consultationType: z.string().optional().nullable(),
+          paymentStatus: z.string().optional().nullable(),
         })
       )
-      .optional()
+      .optional().nullable()
       .describe("List of appointments, if applicable."),
-    totalCount: z.number().optional().describe("Total number of appointments returned."),
-    actionSuccess: z.boolean().optional().describe("Whether a write action (status update/notes) succeeded."),
+    totalCount: z.number().optional().nullable().describe("Total number of appointments returned."),
+    actionSuccess: z.boolean().optional().nullable().describe("Whether a write action (status update/notes) succeeded."),
   }),
 });
 
@@ -88,19 +88,19 @@ Always pass doctorId. For view, pass filter. For updates, pass appointmentId.
       .describe("What operation to perform."),
     filter: z
       .enum(["today", "upcoming", "past", "all"])
-      .optional()
+      .optional().nullable()
       .describe("Used when action = view. Defaults to 'today'."),
     appointmentId: z
       .string()
-      .optional()
+      .optional().nullable()
       .describe("Required for update_status and add_notes."),
     newStatus: z
       .enum(["completed", "no_show", "cancelled"])
-      .optional()
+      .optional().nullable()
       .describe("Required when action = update_status."),
     notes: z
       .string()
-      .optional()
+      .optional().nullable()
       .describe("Clinical notes text. Required when action = add_notes."),
   }),
   includeInputSchema: true,

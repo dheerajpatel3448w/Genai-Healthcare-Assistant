@@ -1,6 +1,7 @@
 import { Worker } from "bullmq";
 import { Imagetotext, analyzeExtractedText } from "../services/gemini.service.js";
 import { saveReport } from "../services/report.service.js";
+import { sendMessageToUser } from "../socket.js";
 
 const redisUrl = process.env.REDIS_URL || `redis://${process.env.REDIS_HOST || "localhost"}:${process.env.REDIS_PORT || "6379"}`;
 
@@ -85,12 +86,36 @@ export const textExtractionWorker = new Worker(
 );
 
 // Worker event handlers
-textExtractionWorker.on("completed", (job) => {
+textExtractionWorker.on("completed", (job, returnvalue) => {
   console.log(`Worker: Job ${job.id} completed successfully`);
+  
+  if (job?.data?.userId) {
+    sendMessageToUser(job.data.userId, {
+      event: "task:completed",
+      data: {
+        success: true,
+        jobId: job.id,
+        message: "Your image extraction task has been completed.",
+        result: returnvalue // Contains the extracted report id and data
+      }
+    });
+  }
 });
 
 textExtractionWorker.on("failed", (job, err) => {
   console.log(`Worker: Job ${job?.id} failed with error:`, err.message);
+  
+  if (job?.data?.userId) {
+    sendMessageToUser(job.data.userId, {
+      event: "task:failed",
+      data: {
+        success: false,
+        jobId: job?.id,
+        message: "Your image extraction task failed.",
+        error: err.message
+      }
+    });
+  }
 });
 
 export default textExtractionWorker;

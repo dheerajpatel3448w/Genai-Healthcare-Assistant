@@ -97,15 +97,15 @@ OUTPUT RULES:
       ),
     recommended_specialist: z
       .string()
-      .optional()
+      .optional().nullable()
       .describe("The specific specialist the user should see, e.g. 'Cardiologist', 'Pulmonologist'."),
     symptom_duration: z
       .string()
-      .optional()
+      .optional().nullable()
       .describe("The duration of symptoms as reported by the user or inferred from context."),
     related_report_ids: z
       .array(z.string())
-      .optional()
+      .optional().nullable()
       .describe("IDs of past medical reports that were directly correlated in this analysis.")
   })
 });
@@ -133,26 +133,29 @@ Returns severity level, identified risks, whether a doctor is urgently needed, a
       .describe("The user's described symptoms as a clear, structured string."),
     symptomDuration: z
       .string()
-      .optional()
-      .describe("How long the user has had these symptoms, e.g. '3 days', '2 weeks'."),
+      .describe("How long the user has had these symptoms, e.g. '3 days', '2 weeks'. Pass empty string if unknown."),
     userProfile: z
       .string()
-      .optional()
       .describe(
-        "A brief stringified snapshot of the user's health profile (preliminary context). The agent will fetch the full profile itself."
+        "A brief stringified snapshot of the user's health profile (preliminary context). Pass empty string if unknown. The agent will fetch the full profile itself."
       )
   }),
 
   includeInputSchema: true,
 
   // FIX: Key was 'symptoms' but agent instructions expected 'symptomsDescription' — now aligned
-  inputBuilder: (args: any) =>
-    JSON.stringify({
-      userId: args.userId,
-      symptomsDescription: args.symptomsDescription,
-      symptomDuration: args.symptomDuration || "Not specified",
-      userProfile: args.userProfile || "Not provided — agent will fetch full profile."
-    }),
+  inputBuilder: (args: any) => {
+    console.log("\n[🤖 AGENT HANDOFF] HealthBrain -> SymptomAgent");
+    const params = args.params || args;
+    console.log("   -> userId passed:", params.userId);
+    console.log("   -> symptoms:", params.symptomsDescription);
+    return JSON.stringify({
+      userId: params.userId,
+      symptomsDescription: params.symptomsDescription,
+      symptomDuration: params.symptomDuration || "Not specified",
+      userProfile: params.userProfile || "Not provided — agent will fetch full profile."
+    });
+  },
 
   customOutputExtractor: (result: any) => {
     try {

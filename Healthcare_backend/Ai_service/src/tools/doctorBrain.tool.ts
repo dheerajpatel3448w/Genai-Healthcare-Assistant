@@ -22,6 +22,9 @@ export const getDoctorAppointmentsTool = tool({
   }),
   execute: async ({ doctorId, filter }) => {
     try {
+      if (!doctorId || !mongoose.Types.ObjectId.isValid(doctorId)) {
+        return { appointments: [], message: "Invalid doctorId." };
+      }
       const query: any = { doctorId: new mongoose.Types.ObjectId(doctorId) };
       const now = new Date();
 
@@ -84,6 +87,9 @@ export const updateAppointmentStatusTool = tool({
   }),
   execute: async ({ appointmentId, doctorId, newStatus }) => {
     try {
+      if (!appointmentId || !mongoose.Types.ObjectId.isValid(appointmentId) || !doctorId || !mongoose.Types.ObjectId.isValid(doctorId)) {
+        return { success: false, message: "Invalid appointmentId or doctorId." };
+      }
       const appointment = await Appointment.findOne({
         _id: new mongoose.Types.ObjectId(appointmentId),
         doctorId: new mongoose.Types.ObjectId(doctorId),
@@ -128,6 +134,9 @@ export const addAppointmentNotesTool = tool({
   }),
   execute: async ({ appointmentId, doctorId, notes }) => {
     try {
+      if (!appointmentId || !mongoose.Types.ObjectId.isValid(appointmentId) || !doctorId || !mongoose.Types.ObjectId.isValid(doctorId)) {
+        return { success: false, message: "Invalid appointmentId or doctorId." };
+      }
       const appointment = await Appointment.findOneAndUpdate(
         {
           _id: new mongoose.Types.ObjectId(appointmentId),
@@ -166,6 +175,9 @@ export const getPatientProfileTool = tool({
   }),
   execute: async ({ patientId }) => {
     try {
+      if (!patientId || !mongoose.Types.ObjectId.isValid(patientId)) {
+        return { found: false, message: "Invalid patientId." };
+      }
       const profile = await UserProfile.findOne({
         userId: new mongoose.Types.ObjectId(patientId),
       }).lean();
@@ -198,6 +210,9 @@ export const getPatientReportsTool = tool({
   }),
   execute: async ({ patientId, reportType }) => {
     try {
+      if (!patientId || !mongoose.Types.ObjectId.isValid(patientId)) {
+        return { reports: [], message: "Invalid patientId." };
+      }
       const query: any = { patientId: new mongoose.Types.ObjectId(patientId) };
       if (reportType !== "all") query.reportType = reportType;
 
@@ -240,6 +255,9 @@ export const getPatientAppointmentHistoryTool = tool({
   }),
   execute: async ({ patientId }) => {
     try {
+      if (!patientId || !mongoose.Types.ObjectId.isValid(patientId)) {
+        return { appointments: [], message: "Invalid patientId." };
+      }
       const appointments = await Appointment.find({
         userId: new mongoose.Types.ObjectId(patientId),
         appointmentDate: { $lt: new Date() },
@@ -369,6 +387,9 @@ export const getDoctorStatsTool = tool({
   }),
   execute: async ({ doctorId }) => {
     try {
+      if (!doctorId || !mongoose.Types.ObjectId.isValid(doctorId)) {
+        return { message: "Invalid doctorId." };
+      }
       const docObjectId = new mongoose.Types.ObjectId(doctorId);
 
       const now = new Date();

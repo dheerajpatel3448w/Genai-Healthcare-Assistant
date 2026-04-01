@@ -3,6 +3,7 @@ import { UserProfile } from "../model/userprofile.model.js";
 import { TryCatch } from "../utils/TryCatch.js";
 import ErrorHandler from "../utils/errorHandler.js";
 import mongoose from "mongoose";
+import { User } from "../model/user.model.js"; // Registers the minimal User schema
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Helper: validate ObjectId format
@@ -97,7 +98,7 @@ export const getUserProfile:RequestHandler = TryCatch(
       return next(new ErrorHandler(400, "Invalid userId format."));
     }
 
-    const profile = await UserProfile.findOne({ userId });
+    const profile = await UserProfile.findOne({ userId }).populate("userId", "name email");
 
     if (!profile) {
       return next(new ErrorHandler(404, "User profile not found."));
@@ -171,5 +172,28 @@ export const deleteUserProfile:RequestHandler = TryCatch(
       success: true,
       message: "User profile deleted successfully.",
     });
+  }
+);
+
+// ──────────────────────────────────────────────────────────────────────────────
+// @route   GET /profile/:id
+// @desc    Get user profile by Patient ID (For Doctors / AI Agent)
+// @access  Private
+// ──────────────────────────────────────────────────────────────────────────────
+export const getUserProfileById: RequestHandler = TryCatch(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+
+    if (!isValidObjectId(id as string)) {
+      return next(new ErrorHandler(400, "Invalid patient profile ID format."));
+    }
+
+    const profile = await UserProfile.findOne({ userId: id as string }).populate("userId", "name email");
+
+    if (!profile) {
+      return next(new ErrorHandler(404, "Patient profile not found."));
+    }
+
+    return res.status(200).json({ success: true, profile });
   }
 );
