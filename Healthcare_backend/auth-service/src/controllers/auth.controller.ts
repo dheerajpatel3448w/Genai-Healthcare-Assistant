@@ -6,7 +6,8 @@ import jwt from "jsonwebtoken";
 
 // Generate JWT Token
 const generateToken = (id: any): string => {
-  const secret = process.env.JWT_SECRET;
+  const secret = process.env.JWT_SECRET?.trim();
+  console.log("[auth-service] secret length:", secret?.length);
   if (!secret) {
     throw new Error("JWT secret not found in environment variables");
   }

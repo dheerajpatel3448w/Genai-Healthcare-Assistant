@@ -40,7 +40,7 @@ export default function LoginPage() {
       if (res.data.user.role === "patient") {
         const res2 = await axios.get(`${process.env.NEXT_PUBLIC_API_USER}/profile/getprofile`, {
           withCredentials: true,
-          headers: { Authorization: Cookies.get("token") }
+          headers: { Authorization: `Bearer ${Cookies.get("token")}` }
         });
         setUser({ ...res.data.user, profile: { ...res2.data.profile } });
         setIsAuth(true);
@@ -49,7 +49,7 @@ export default function LoginPage() {
       if (res.data.user.role === "doctor") {
         const res3 = await axios.get(`${process.env.NEXT_PUBLIC_API_DOCTOR}/doctor/getprofile`, {
           withCredentials: true,
-          headers: { Authorization: Cookies.get("token") }
+          headers: { Authorization: `Bearer ${Cookies.get("token")}` }
         });
         setDoctor({ ...res.data.user, doctorProfile: { ...res3.data.profile } });
         setIsAuth2(true);

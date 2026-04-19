@@ -17,19 +17,26 @@ export const isAuthenticated = (
   next: NextFunction
 ) => {
   // Get token from cookies or Authorization header
-  const token =
-    req.cookies?.token ||
-    req.headers.authorization?.split(" ")[1];
+  // Supports both "Bearer <token>" and raw "<token>" in Authorization header
+  const authHeader = req.headers.authorization;
+  const headerToken = authHeader?.startsWith("Bearer ")
+    ? authHeader.split(" ")[1]
+    : authHeader; // raw token without Bearer prefix
+
+  const token = req.cookies?.token || headerToken;
+
+  const secret = (process.env.JWT_SECRET as string)?.trim();
+  console.log("[auth] secret length:", secret?.length, "token exists:", !!token);
 
   if (!token) {
     throw new ErrorHandler(401, "Please login to access this resource");
   }
- console.log(token)
+
   try {
     // Verify token
     const decoded = jwt.verify(
       token,
-      process.env.JWT_SECRET as string
+      secret
     ) as any;
 
     // Attach user to request

@@ -10,7 +10,7 @@ import {
   getTipHandler,
 } from "../controller/habit.controller.js";
 
-const router = Router();
+const router: Router = Router();
 
 // All habit routes require a valid JWT
 router.use(isAuthenticated);
